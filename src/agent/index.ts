@@ -19,6 +19,12 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 
+// Patch ChatOpenAI to use Grok-2-Vision-1212 instead
+import { patchOpenAIWithGrok } from "./grok-patch";
+
+// Apply the patch before any other imports that might use ChatOpenAI
+patchOpenAIWithGrok();
+
 const GraphAnnotation = Annotation.Root({
   ...CUAAnnotation.spec,
   ui: Annotation<
@@ -235,4 +241,14 @@ export const graph = createCua({
   recursionLimit: 150,
   timeoutHours: 0.1,
   uploadScreenshot,
+  environment: "ubuntu", // Explicitly set environment for better computer control
+  prompt: `You are a computer use assistant powered by grok-2-vision-1212. You can:
+- Control the computer through clicking, typing, and other actions
+- Take screenshots to see the current state
+- Use bash commands to execute shell operations
+- Navigate and interact with the graphical interface
+
+Always take a screenshot first to see the current state before taking any action.
+Be precise with coordinates and take time to analyze the screen before acting.
+If a task requires multiple steps, break it down and execute them sequentially.`,
 });
